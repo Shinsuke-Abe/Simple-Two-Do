@@ -3,4 +3,6 @@
 /project/boot
 /project/plugins/target
 /project/plugins/project
+/.idea
+/.idea_modules
 
