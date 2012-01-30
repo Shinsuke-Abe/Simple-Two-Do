@@ -1,0 +1,3 @@
+<%@ var name: String = "Deron Williams" %>
+<%@ var city: String = "Salt Lake City" %>
+<h1>Hello, ${name} from ${city}</h1>
