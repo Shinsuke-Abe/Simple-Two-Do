@@ -1,6 +1,7 @@
 <html>
 <head>
 <script type="text/javascript" src="public/js/hellotype.js" ></script>
+<script type="text/javascript" src="404jsfile.js" ></script>
 </head>
 <body>
 <%@ var name: String = "Deron Williams" %>
@@ -8,5 +9,6 @@
 <h1>Hello, ${name} from ${city}</h1>
 
 <input type="button" value="button" onclick="helloworld();" />
+<input type="button" value="ref not context file" onclick="notcontext();" />
 </body>
 </html>
