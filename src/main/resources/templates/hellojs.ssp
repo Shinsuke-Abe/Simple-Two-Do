@@ -1,0 +1,12 @@
+<html>
+<head>
+<script type="text/javascript" src="public/js/hellotype.js" ></script>
+</head>
+<body>
+<%@ var name: String = "Deron Williams" %>
+<%@ var city: String = "Salt Lake City" %>
+<h1>Hello, ${name} from ${city}</h1>
+
+<input type="button" value="button" onclick="helloworld();" />
+</body>
+</html>
