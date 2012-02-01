@@ -5,7 +5,6 @@ import unfiltered.response._
 import util.Properties
 import unfiltered.scalate._
 
-// TODO 静的ページ
 // TODO session管理
 // TODO Twitter API
 class App extends unfiltered.filter.Plan {
@@ -16,6 +15,7 @@ class App extends unfiltered.filter.Plan {
     // static js sample
     case req@GET(Path(Seg("scalatejs" :: Nil))) => Ok ~> Scalate(req, "hellojs.ssp")
     case GET(_) => Ok ~> ResponseString("Unfiltered on Heroku!")
+    // /public/index.htmlにはアクセス可能
   }
 }
 
