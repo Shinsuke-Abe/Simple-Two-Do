@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
    "net.databinder" %% "unfiltered-filter" % "0.5.3",
    "net.databinder" %% "unfiltered-jetty" % "0.5.3",
    "org.fusesource.scalate" % "scalate-core" % "1.5.3",
-   "org.fusesource.scalate" % "scalate-util" % "1.5.3" % "test"
+   "org.fusesource.scalate" % "scalate-util" % "1.5.3" % "test",
+   "org.twitter4j" % "twitter4j-core" % "[2.2,)"
 )
 
-resolvers ++= Nil
+resolvers += "twitter4j.org Repository" at "http://twitter4j.org/maven2"

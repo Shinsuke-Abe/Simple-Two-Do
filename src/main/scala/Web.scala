@@ -6,6 +6,7 @@ import util.Properties
 import unfiltered.scalate._
 
 // TODO session管理
+// TODO POSTメソッドでbody部から値を取り出す
 // TODO Twitter API
 class App extends unfiltered.filter.Plan {
 
@@ -14,6 +15,8 @@ class App extends unfiltered.filter.Plan {
     case req@GET(Path(Seg("scalate" :: Nil))) => Ok ~> Scalate(req, "hello.ssp")
     // static js sample
     case req@GET(Path(Seg("scalatejs" :: Nil))) => Ok ~> Scalate(req, "hellojs.ssp")
+    // sessionテスト
+    // login -> session(cookie)にユーザ情報追加
     case GET(_) => Ok ~> ResponseString("Unfiltered on Heroku!")
     // /public/index.htmlにはアクセス可能
   }
