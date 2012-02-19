@@ -8,12 +8,13 @@ package com.maosandbox.twitterutil
  * To change this template use File | Settings | File Templates.
  */
 
+import util.Properties
 import twitter4j._
 import scala.collection.JavaConverters._
 import scala.collection.mutable._
 
 object TwitterUtil {
-  val twitter = new TwitterFactory().getInstance()
+  private val twitter = new TwitterFactory().getInstance()
 
   def getUserTimeLine(user: String): Buffer[Status] = {
     asScalaBufferConverter(twitter.getUserTimeline(user)).asScala
@@ -21,5 +22,18 @@ object TwitterUtil {
 
   def getUserLastTweet(user: String): String = {
     getUserTimeLine(user).head.getText
+  }
+
+  def getQueryTweets(query: Query): Buffer[Tweet] = {
+    val result = twitter.search(query)
+    result.getTweets.asScala
+  }
+
+  def getRequestToken: auth.RequestToken = {
+    twitter.getOAuthRequestToken(Properties.propOrEmpty("oauth.callbackurl"))
+  }
+
+  def getAccessToken(reqToken: auth.RequestToken, verifier: String): auth.AccessToken = {
+    twitter.getOAuthAccessToken(reqToken, verifier)
   }
 }
