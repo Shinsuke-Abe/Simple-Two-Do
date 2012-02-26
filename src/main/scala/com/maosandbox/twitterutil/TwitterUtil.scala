@@ -8,7 +8,6 @@ package com.maosandbox.twitterutil
  * To change this template use File | Settings | File Templates.
  */
 
-import util.Properties
 import twitter4j._
 import scala.collection.JavaConverters._
 import scala.collection.mutable._
@@ -30,7 +29,7 @@ object TwitterUtil {
   }
 
   def getRequestToken: auth.RequestToken = {
-    twitter.getOAuthRequestToken(Properties.propOrEmpty("oauth.callbackurl"))
+    twitter.getOAuthRequestToken("http://localhost:8080/getaccesstoken")
   }
 
   def getAccessToken(reqToken: auth.RequestToken, verifier: String): auth.AccessToken = {

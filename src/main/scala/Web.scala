@@ -7,11 +7,15 @@ import unfiltered.scalate._
 import com.maosandbox.twitterutil.TwitterUtil._
 import twitter4j._
 import com.maosandbox.requestutil._
+import unfiltered.Cycle
+import unfiltered.Cookie
 
-// TODO session管理
 // TODO POSTメソッドでbody部から値を取り出す
-// TODO Twitter API
 class App extends unfiltered.filter.Plan {
+
+  private val reqTokenKey = "RequestToken"
+
+  private val sessionKey = "VHdvRG9TZXNzaW9uS2V5"
 
   def intent = {
     // Scalate Sample
@@ -44,36 +48,44 @@ class App extends unfiltered.filter.Plan {
       Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
     }
     // Twitter APIからOAuth認証画面にリダイレクトする
-    case req@GET(Path(Seg("authwithtwitter" :: Nil))) => {
+    case GET(Path(Seg("authwithtwitter" :: Nil))) => {
       // リクエストトークンをセッションに保存する
       val reqToken = getRequestToken
-      var session = req.underlying.getSession(true)
-      session.setAttribute("RequestToken", reqToken)
+      // セッション生成とセット
+      val sessionId = SimpleSessionStore.createSession
+      SimpleSessionStore.setSessionAttribute(sessionId, reqTokenKey, reqToken)
 
-      Redirect(reqToken.getAuthenticationURL)
+      ResponseCookies(Cookie(sessionKey, sessionId)) ~> Redirect(reqToken.getAuthenticationURL)
     }
     // Twitterの認証画面からコールバックされるURL
-    case GET(Path(Seg("getaccesstoken" :: Nil)) & HttpSession(session) & Params(param)) => {
+    case GET(Path(Seg("getaccesstoken" :: Nil)) & Cookies(cookies) & Params(param)) => {
       def p(k: String) = param.get(k).flatMap {
         _.headOption
       } getOrElse ("")
-      // セッションからリクエストトークンを取得する
-      val reqToken = session.getAttribute("RequestToken").asInstanceOf[auth.RequestToken]
-      // リクエストパラメータからoauth_verifierを取得する
-      val verifier = p("oauth_verifier")
+      // CookieからセッションIDを取得する
+      cookies(sessionKey) match {
+        case Some(Cookie(_, sessionId, _, _, _, _)) => {
+          // セッションからリクエストトークンを取得する
+          SimpleSessionStore.getSessionAttribute(sessionId, reqTokenKey) match {
+            case Some(reqToken) => {
+              // リクエストパラメータからoauth_verifierを取得する
+              val verifier = p("oauth_verifier")
 
-      val accToken = getAccessToken(reqToken, verifier)
+              val accToken = getAccessToken(reqToken.asInstanceOf[auth.RequestToken], verifier)
 
-      // リクエストトークンは不要になるので、セッションから削除
-      session.removeAttribute("RequestToken")
+              // リクエストトークンは不要になるので、セッションから削除
+              SimpleSessionStore.removeSessionAttribute(sessionId, reqTokenKey)
 
-      Ok ~> HtmlContent ~> ResponseString("token=" + accToken.getToken + "<br/>tokenSecret=" + accToken.getTokenSecret)
+              Ok ~> HtmlContent ~> ResponseString("token=" + accToken.getToken + "<br/>tokenSecret=" + accToken.getTokenSecret)
+            }
+            case None => Unauthorized ~> HtmlContent ~> ResponseString("authorized error")
+          }
+        }
+        case _ => Unauthorized ~> HtmlContent ~> ResponseString("authorized error")
+      }
     }
-    // TODO OAuth
     // TODO アクセストークンの永続化
     // TODO タスクの状態の永続化(Mongo-DBを使う予定)
-    // sessionテスト
-    // login -> session(cookie)にユーザ情報追加
     case GET(_) => Ok ~> ResponseString("Unfiltered on Heroku!")
     // /public/index.htmlにはアクセス可能
   }
@@ -84,6 +96,20 @@ class App extends unfiltered.filter.Plan {
     ret.setRpp(100)
 
     ret
+  }
+}
+
+/**
+ * ユーザ認証判定のためのフィルタ
+ */
+object UserAuth extends unfiltered.kit.Prepend {
+  def intent = Cycle.Intent[Any, Any] {
+    case Cookies(cookies) if (cookies.get("TwoDoUserId").isDefined) => {
+      Pass
+    }
+    case _ => {
+      Redirect("/login")
+    }
   }
 }
 
