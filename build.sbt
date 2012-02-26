@@ -17,11 +17,16 @@ libraryDependencies ++= Seq(
    "org.fusesource.scalate" % "scalate-util" % "1.5.3" % "test",
    "org.twitter4j" % "twitter4j-core" % "[2.2,)",
    "net.databinder" %% "unfiltered-scalatest" % "0.5.3",
-   "com.mongodb.casbah" % "casbah_2.8.1" % "2.0.1"
+   "com.mongodb.casbah" % "casbah_2.8.1" % "2.0.1",
+   "com.novus" %% "salat-core" % "0.0.8-SNAPSHOT"
 )
 
 resolvers += "twitter4j.org Repository" at "http://twitter4j.org/maven2"
 
-resolvers += "scala-tools For MongoDB Librarys Repository release" at "http://scala-tools.org/repo-releases/"
+resolvers += "scala-tools for Casbah build on heroku release" at "http://scala-tools.org/repo-releases/"
 
-resolvers += "scala-tools For MongoDB Librarys Repository snapshot" at "http://scala-tools.org/repo-snapshots/"
+resolvers += "scala-tools for Casbah build on heroku snapshot" at "http://scala-tools.org/repo-snapshots/"
+
+resolvers += "repo.novus for salat build release" at "http://repo.novus.com/releases/"
+
+resolvers += "repo.novus for salat build snapshot" at "http://repo.novus.com/snapshots/"

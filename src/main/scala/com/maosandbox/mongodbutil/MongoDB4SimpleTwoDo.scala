@@ -1,4 +1,4 @@
-package com.maosandbox.mongdbutil
+package com.maosandbox.mongodbutil
 
 /**
  * Created by IntelliJ IDEA.
