@@ -21,3 +21,7 @@ libraryDependencies ++= Seq(
 )
 
 resolvers += "twitter4j.org Repository" at "http://twitter4j.org/maven2"
+
+resolvers += "scala-tools For MongoDB Librarys Repository release" at "http://scala-tools.org/repo-releases/"
+
+resolvers += "scala-tools For MongoDB Librarys Repository snapshot" at "http://scala-tools.org/repo-snapshots/"
