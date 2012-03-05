@@ -23,10 +23,6 @@ libraryDependencies ++= Seq(
 
 resolvers += "twitter4j.org Repository" at "http://twitter4j.org/maven2"
 
-resolvers += "scala-tools for Casbah build on heroku release" at "http://scala-tools.org/repo-releases/"
-
-resolvers += "scala-tools for Casbah build on heroku snapshot" at "http://scala-tools.org/repo-snapshots/"
-
 resolvers += "repo.novus for salat build release" at "http://repo.novus.com/releases/"
 
 resolvers += "repo.novus for salat build snapshot" at "http://repo.novus.com/snapshots/"

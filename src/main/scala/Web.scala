@@ -4,54 +4,66 @@ import unfiltered.request._
 import unfiltered.response._
 import util.Properties
 import unfiltered.scalate._
-import com.maosandbox.twitterutil.TwitterUtil._
+import com.simpletwodo.twitterutil.SimpleTwoDoTwitter._
 import twitter4j._
-import com.maosandbox.requestutil._
+import com.simpletwodo.requestutil._
 import unfiltered.Cycle
 import unfiltered.Cookie
+import com.simpletwodo.mongodbutil._
+import com.simpletwodo.propertiesutil._
 
+// TODO 設定ファイル
 // TODO POSTメソッドでbody部から値を取り出す
-class App extends unfiltered.filter.Plan {
-
-  private val reqTokenKey = "RequestToken"
-
-  private val sessionKey = "VHdvRG9TZXNzaW9uS2V5"
-
-  def intent = {
+// TODO リファクタリング
+class TwoDoApplicationServer extends unfiltered.filter.Plan {
+  def intent = UserAuth {
     // Scalate Sample
     case req@GET(Path(Seg("scalate" :: Nil))) => Ok ~> Scalate(req, "hello.ssp")
     // static js sample
     case req@GET(Path(Seg("scalatejs" :: Nil))) => Ok ~> Scalate(req, "hellojs.ssp")
-    // get my last one tweet
-    case req@GET(Path(Seg("lasttweet" :: Nil))) => {
-      // マルチバイト対応(というかブラウザのデフォルトエンコーディングによる文字化けの対応)のため、
-      // HtmlContentを明示的に指定する
-      Ok ~> HtmlContent ~> ResponseString(getUserLastTweet("mao_instantlife"))
+    // to do list main page
+    case req@GET(Path(Seg("twodolist" :: Nil)) & Cookies(cookies)) => {
+      cookies("TwoDoUserId") match {
+        case Some(Cookie(_, userIdStr, _, _, _, _)) => {
+          SimpleTwoDoDatabase.getUserData(userIdStr.toLong) match {
+            case Some(userData) => {
+              val twodotweets = getToDoTweets(userData)
+
+              var tweetStr = new StringBuilder
+              tweetStr.append("tweet length=").append(twodotweets.length).append("<br/><br/>")
+              twodotweets.foreach(tweet => tweetStr.append(tweet.getText).append("<br/><br/>"))
+
+              Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
+            }
+            case None => authErr(MessageProperties.getProperty("err.authuser.notfound"))
+          }
+        }
+        case _ => authErr(MessageProperties.getProperty("err.authentication"))
+      }
     }
-    // get my timeline
-    case req@GET(Path(Seg("gettimeline" :: Nil))) => {
-      val statuses = getUserTimeLine("mao_instantlife")
+    case GET(_) => NotFound ~> ResponseString(MessageProperties.getProperty("err.requestapi.notfound"))
+    // /public/index.htmlにはアクセス可能
+  }
 
-      var tweetStr = new StringBuilder
-      statuses.foreach(tweet => tweetStr.append(tweet.getText).append("<br/>"))
+  def authErr(message: String) = {
+    Unauthorized ~> HtmlContent ~> ResponseString(message)
+  }
+}
 
-      Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
-    }
-    // twodo で利用するツイートの取得
-    case req@GET(Path(Seg("gettwodotweets" :: Nil))) => {
-      val twodotweets = getQueryTweets(queryGenerate("mao_instantlife", "2012-02-12"))
+/**
+ * Twitterを利用したOAuth認証用のPlanクラス
+ */
+class AuthenticationServer extends unfiltered.filter.Plan {
+  private val reqTokenKey = "RequestToken"
+  private val sessionKey = "VHdvRG9TZXNzaW9uS2V5"
 
-      var tweetStr = new StringBuilder
-      tweetStr.append("tweet length=").append(twodotweets.length).append("<br/><br/>")
-      twodotweets.foreach(tweet => tweetStr.append(tweet.getText).append("<br/><br/>"))
+  private val authCookieAge: Int = 60 * 60 * 24 * 7 // 1週間
 
-      Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
-    }
+  def intent = {
     // Twitter APIからOAuth認証画面にリダイレクトする
     case GET(Path(Seg("authwithtwitter" :: Nil))) => {
       // リクエストトークンをセッションに保存する
       val reqToken = getRequestToken
-      // セッション生成とセット
       val sessionId = SimpleSessionStore.createSession
       SimpleSessionStore.setSessionAttribute(sessionId, reqTokenKey, reqToken)
 
@@ -62,40 +74,41 @@ class App extends unfiltered.filter.Plan {
       def p(k: String) = param.get(k).flatMap {
         _.headOption
       } getOrElse ("")
-      // CookieからセッションIDを取得する
+
       cookies(sessionKey) match {
         case Some(Cookie(_, sessionId, _, _, _, _)) => {
-          // セッションからリクエストトークンを取得する
           SimpleSessionStore.getSessionAttribute(sessionId, reqTokenKey) match {
             case Some(reqToken) => {
-              // リクエストパラメータからoauth_verifierを取得する
               val verifier = p("oauth_verifier")
-
               val accToken = getAccessToken(reqToken.asInstanceOf[auth.RequestToken], verifier)
 
               // リクエストトークンは不要になるので、セッションから削除
               SimpleSessionStore.removeSessionAttribute(sessionId, reqTokenKey)
 
-              Ok ~> HtmlContent ~> ResponseString("token=" + accToken.getToken + "<br/>tokenSecret=" + accToken.getTokenSecret)
+              if (SimpleTwoDoDatabase.getUserData(accToken.getUserId).isEmpty) {
+                SimpleTwoDoDatabase.insertUserData(
+                  SimpleTwoDoUserData.apply(
+                    accToken.getUserId,
+                    accToken.getScreenName,
+                    accToken.getToken,
+                    accToken.getTokenSecret
+                  )
+                )
+              }
+
+              // CookieにユーザIDをセットしてリストページにリダイレクトする
+              ResponseCookies(Cookie("TwoDoUserId", accToken.getUserId.toString, maxAge = Some(authCookieAge))) ~> Redirect("twodolist")
             }
-            case None => Unauthorized ~> HtmlContent ~> ResponseString("authorized error")
+            case None => authErr
           }
         }
-        case _ => Unauthorized ~> HtmlContent ~> ResponseString("authorized error")
+        case _ => authErr
       }
     }
-    // TODO アクセストークンの永続化
-    // TODO タスクの状態の永続化(Mongo-DBを使う予定)
-    case GET(_) => Ok ~> ResponseString("Unfiltered on Heroku!")
-    // /public/index.htmlにはアクセス可能
   }
 
-  private def queryGenerate(screenId: String, lastAccessDate: String): Query = {
-    val ret = new Query("from:" + screenId + " to:" + screenId + " #SimpleTwoDo")
-    ret.setSince(lastAccessDate)
-    ret.setRpp(100)
-
-    ret
+  def authErr = {
+    Unauthorized ~> HtmlContent ~> ResponseString(MessageProperties.getProperty("err.authentication"))
   }
 }
 
@@ -108,7 +121,7 @@ object UserAuth extends unfiltered.kit.Prepend {
       Pass
     }
     case _ => {
-      Redirect("/login")
+      Redirect("/authwithtwitter")
     }
   }
 }
@@ -119,6 +132,6 @@ object Web {
     unfiltered.jetty.Http(port).context("/public") {
       // add context for static contents "src/main/resource/public"
       _.resources(getClass().getResource("/public/"))
-    }.filter(new App).run
+    }.filter(new AuthenticationServer).filter(new TwoDoApplicationServer).run
   }
 }
