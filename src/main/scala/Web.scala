@@ -31,7 +31,7 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan {
 
               var tweetStr = new StringBuilder
               tweetStr.append("tweet length=").append(twodotweets.length).append("<br/><br/>")
-              twodotweets.foreach(tweet => tweetStr.append(tweet.getText).append("<br/><br/>"))
+              twodotweets.foreach(tweet => tweetStr.append(tweet.getId).append(tweet.getText).append("<br/><br/>"))
 
               Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
             }
