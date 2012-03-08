@@ -7,28 +7,24 @@ package com.simpletwodo.mongodbutil
  * Time: 21:21
  * User data and task list are stored MongoDB.
  * Connection string of MongoDB are environment values.
- *   TWODO_CONNECTION
- *   TWODO_COLLECTION
  */
-
-// TODO 環境変数からの取得
-// TODO 環境変数がないときはローカル
-// TODO ローカルファイルはステージング環境にアップしない
 
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
+import com.mongodb.MongoURI
+import com.simpletwodo.propertiesutil.MessageProperties
+import com.simpletwodo.propertiesutil.ServerEnvSettings
 
 /**
  * MongoDBへの接続とユーザデータとタスクリストのCRUDを管理します。
  */
 object SimpleTwoDoDatabase {
-  val conn = MongoConnection()
+  val conn = MongoConnection(new MongoURI(ServerEnvSettings.get("MONGOLAB_URI")))
   val db = conn("simple_twodo")
   val usersDataCollection = db("users_data")
 
   private val userIdKey = "userId"
-  private val duplicateErrMsg = "insertUserData error:user data duplicate. userId = %d."
 
   val g = grater[SimpleTwoDoUserData]
 
@@ -38,7 +34,8 @@ object SimpleTwoDoDatabase {
    */
   def insertUserData(userData: SimpleTwoDoUserData) {
     getUserData(userData.userId) match {
-      case Some(dbUserData) if userData == dbUserData => throw new IllegalArgumentException(duplicateErrMsg.format(userData.userId))
+      case Some(dbUserData) if userData == dbUserData =>
+        throw new IllegalArgumentException(MessageProperties.get("err.database.duplicate").format(userData.userId))
       case _ => usersDataCollection += g.asDBObject(userData)
     }
   }
@@ -90,7 +87,8 @@ case class SimpleTwoDoUserData(
                                 userTaskList: List[SimpleTwoDoTask] = List[SimpleTwoDoTask]()
                                 ) {
   override def equals(other: Any) = other match {
-    case that: SimpleTwoDoUserData => that.userId == this.userId && that.accsToken == this.accsToken && that.tokenSecret == this.tokenSecret
+    case that: SimpleTwoDoUserData =>
+      that.userId == this.userId && that.accsToken == this.accsToken && that.tokenSecret == this.tokenSecret
     case _ => false
   }
 

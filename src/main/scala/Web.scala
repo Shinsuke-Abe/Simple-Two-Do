@@ -12,9 +12,7 @@ import unfiltered.Cookie
 import com.simpletwodo.mongodbutil._
 import com.simpletwodo.propertiesutil._
 
-// TODO 設定ファイル
 // TODO POSTメソッドでbody部から値を取り出す
-// TODO リファクタリング
 class TwoDoApplicationServer extends unfiltered.filter.Plan {
   def intent = UserAuth {
     // Scalate Sample
@@ -23,7 +21,7 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan {
     case req@GET(Path(Seg("scalatejs" :: Nil))) => Ok ~> Scalate(req, "hellojs.ssp")
     // to do list main page
     case req@GET(Path(Seg("twodolist" :: Nil)) & Cookies(cookies)) => {
-      cookies("TwoDoUserId") match {
+      cookies(SimpleTwoDoProperties.get("cookies.userauthorizedkey")) match {
         case Some(Cookie(_, userIdStr, _, _, _, _)) => {
           SimpleTwoDoDatabase.getUserData(userIdStr.toLong) match {
             case Some(userData) => {
@@ -35,13 +33,13 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan {
 
               Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
             }
-            case None => authErr(MessageProperties.getProperty("err.authuser.notfound"))
+            case None => authErr(MessageProperties.get("err.authuser.notfound"))
           }
         }
-        case _ => authErr(MessageProperties.getProperty("err.authentication"))
+        case _ => authErr(MessageProperties.get("err.authentication"))
       }
     }
-    case GET(_) => NotFound ~> ResponseString(MessageProperties.getProperty("err.requestapi.notfound"))
+    case GET(_) => NotFound ~> ResponseString(MessageProperties.get("err.requestapi.notfound"))
     // /public/index.htmlにはアクセス可能
   }
 
@@ -97,7 +95,13 @@ class AuthenticationServer extends unfiltered.filter.Plan {
               }
 
               // CookieにユーザIDをセットしてリストページにリダイレクトする
-              ResponseCookies(Cookie("TwoDoUserId", accToken.getUserId.toString, maxAge = Some(authCookieAge))) ~> Redirect("twodolist")
+              ResponseCookies(
+                Cookie(
+                  SimpleTwoDoProperties.get("cookies.userauthorizedkey"),
+                  accToken.getUserId.toString,
+                  maxAge = Some(authCookieAge)
+                )
+              ) ~> Redirect("twodolist")
             }
             case None => authErr
           }
@@ -108,7 +112,7 @@ class AuthenticationServer extends unfiltered.filter.Plan {
   }
 
   def authErr = {
-    Unauthorized ~> HtmlContent ~> ResponseString(MessageProperties.getProperty("err.authentication"))
+    Unauthorized ~> HtmlContent ~> ResponseString(MessageProperties.get("err.authentication"))
   }
 }
 
@@ -117,7 +121,7 @@ class AuthenticationServer extends unfiltered.filter.Plan {
  */
 object UserAuth extends unfiltered.kit.Prepend {
   def intent = Cycle.Intent[Any, Any] {
-    case Cookies(cookies) if (cookies.get("TwoDoUserId").isDefined) => {
+    case Cookies(cookies) if (cookies.get(SimpleTwoDoProperties.get("cookies.userauthorizedkey")).isDefined) => {
       Pass
     }
     case _ => {

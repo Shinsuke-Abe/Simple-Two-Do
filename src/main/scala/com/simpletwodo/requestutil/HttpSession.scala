@@ -9,6 +9,7 @@ package com.simpletwodo.requestutil
  */
 
 import scala.collection._
+import com.simpletwodo.propertiesutil.MessageProperties
 
 /**
  * セッション管理オブジェクト
@@ -54,7 +55,7 @@ object SimpleSessionStore {
   def setSessionAttribute(sid: String, attrKey: String, attrValue: Any) {
     storage get sid match {
       case Some(attrMap) => attrMap.put(attrKey, attrValue)
-      case None => throw new IllegalStateException("session Id is not generated")
+      case None => throw new IllegalStateException(MessageProperties.get("err.sessionid.notfound"))
     }
   }
 
@@ -68,7 +69,7 @@ object SimpleSessionStore {
   def getSessionAttribute(sid: String, attrKey: String) = {
     storage get sid match {
       case Some(attrMap) => attrMap.get(attrKey)
-      case None => throw new IllegalStateException("session Id is not generated")
+      case None => throw new IllegalStateException(MessageProperties.get("err.sessionid.notfound"))
     }
   }
 
@@ -81,7 +82,7 @@ object SimpleSessionStore {
   def removeSessionAttribute(sid: String, attrKey: String) {
     storage get sid match {
       case Some(attrMap) => attrMap.remove(attrKey)
-      case None => throw new IllegalStateException("session Id is not generated")
+      case None => throw new IllegalStateException(MessageProperties.get("err.sessionid.notfound"))
     }
   }
 

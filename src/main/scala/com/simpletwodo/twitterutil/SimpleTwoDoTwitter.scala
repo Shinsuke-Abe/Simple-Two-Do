@@ -12,10 +12,19 @@ import twitter4j._
 import scala.collection.JavaConverters._
 import scala.collection.mutable._
 import com.simpletwodo.mongodbutil._
+import com.simpletwodo.propertiesutil.SimpleTwoDoProperties
+import com.simpletwodo.propertiesutil.ServerEnvSettings
 
 object SimpleTwoDoTwitter {
+
+  private val confbuilder = new conf.ConfigurationBuilder
+  confbuilder.setOAuthConsumerKey(ServerEnvSettings.get("OAUTH_CONSUMERKEY"))
+  confbuilder.setOAuthConsumerSecret(ServerEnvSettings.get("OAUTH_CONSUMERSECRET"))
+
+  private val twitterconfig = confbuilder.build()
+
   def getAuthorizedInstance(userData: SimpleTwoDoUserData) = {
-    val factory = new TwitterFactory()
+    val factory = new TwitterFactory(twitterconfig)
     factory.getInstance(loadAccessToken(userData))
   }
 
@@ -29,7 +38,7 @@ object SimpleTwoDoTwitter {
   }
 
   private def queryGenerate(screenId: String, lastAccessDate: String): Query = {
-    val ret = new Query("from:" + screenId + " to:" + screenId + " #SimpleTwoDo")
+    val ret = new Query(SimpleTwoDoProperties.get("twitter.query").format(screenId, screenId))
     ret.setSince(lastAccessDate)
     ret.setRpp(100)
 
@@ -37,12 +46,12 @@ object SimpleTwoDoTwitter {
   }
 
   def getRequestToken: auth.RequestToken = {
-    val factory = new TwitterFactory()
-    factory.getInstance().getOAuthRequestToken("http://localhost:8080/getaccesstoken")
+    val factory = new TwitterFactory(twitterconfig)
+    factory.getInstance().getOAuthRequestToken(ServerEnvSettings.get("TWITTER_AUTHCALLBACKURL"))
   }
 
   def getAccessToken(reqToken: auth.RequestToken, verifier: String): auth.AccessToken = {
-    val factory = new TwitterFactory()
+    val factory = new TwitterFactory(twitterconfig)
     factory.getInstance().getOAuthAccessToken(reqToken, verifier)
   }
 }
