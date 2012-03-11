@@ -12,7 +12,7 @@ package com.simpletwodo.mongodbutil
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-import com.mongodb.MongoURI
+import com.mongodb.casbah.MongoURI
 import com.simpletwodo.propertiesutil.MessageProperties
 import com.simpletwodo.propertiesutil.ServerEnvSettings
 
@@ -20,8 +20,7 @@ import com.simpletwodo.propertiesutil.ServerEnvSettings
  * MongoDBへの接続とユーザデータとタスクリストのCRUDを管理します。
  */
 object SimpleTwoDoDatabase {
-  val conn = MongoConnection(new MongoURI(ServerEnvSettings.get("MONGOLAB_URI")))
-  val db = conn("simple_twodo")
+  val db = MongoURI(ServerEnvSettings.get("MONGOLAB_URI")).connectDB
   val usersDataCollection = db("users_data")
 
   private val userIdKey = "userId"
@@ -136,7 +135,7 @@ case class SimpleTwoDoUserData(
  * @param tweetStatus ツイートの内容(メンションとハッシュタグはのぞく)
  * @param taskStatus タスクの状況(false=>to do true=>done)
  */
-case class SimpleTwoDoTask(tweetId: Long, tweetStatus: String, var taskStatus: Boolean) {
+case class SimpleTwoDoTask(tweetId: Long, tweetStatus: String, var taskStatus: Boolean = false) {
   override def equals(other: Any) = other match {
     case that: SimpleTwoDoTask => that.tweetId == this.tweetId
     case _ => false

@@ -1,0 +1,31 @@
+!!! 5
+%html
+    %head
+        %title Simple Two Do
+        %link{:rel => "stylesheet", :type => "text/css", :href => "public/js/jqtransformplugin/jqtransform.css", "media" => "all"}
+        %script{:type => "text/javascript", :src => "public/js/jquery.js"}
+        %script{:type => "text/javascript", :src => "public/js/jqtransformplugin/jquery.jqtransform.js"}
+        %script{:language => "javascript"} $(function(){ $('form').jqTransform({imgPath:'public/js/jqtransformplugin/img/'}); });
+    %body
+        #all
+            %h1 Simple Two Do
+            %form{:method => "post", :action => "", :enctype => "multipart/form-data"}
+                -@ val userData: com.simpletwodo.mongodbutil.SimpleTwoDoUserData
+
+                .rowElem
+                    ようこそ、#{userData.screenName}さん。
+
+                .rowElem
+                    Tweetを利用してToDo管理をするためのサービスです。
+                    %br
+                    自分に対して、以下のようにリプライを飛ばすことで、ToDoリストに追加されます。
+                    %br
+                    \@ユーザアカウント タスクの内容 #SimpleTwoDo
+                    %br
+                    リプライで検索しているため、ユーザアカウントは最初につけてください。
+
+                - for(tweet:com.simpletwodo.mongodbutil.SimpleTwoDoTask <- userData.userTaskList)
+                    - import tweet._
+                    .rowElem
+                        %input.checkbox{:type => "checkbox", :id => {tweetId.toString}}
+                            %label.checkbox{"for" => {tweetId}} #{tweetStatus}

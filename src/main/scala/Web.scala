@@ -14,24 +14,27 @@ import com.simpletwodo.propertiesutil._
 
 // TODO POSTメソッドでbody部から値を取り出す
 class TwoDoApplicationServer extends unfiltered.filter.Plan {
+
   def intent = UserAuth {
-    // Scalate Sample
-    case req@GET(Path(Seg("scalate" :: Nil))) => Ok ~> Scalate(req, "hello.ssp")
-    // static js sample
-    case req@GET(Path(Seg("scalatejs" :: Nil))) => Ok ~> Scalate(req, "hellojs.ssp")
     // to do list main page
     case req@GET(Path(Seg("twodolist" :: Nil)) & Cookies(cookies)) => {
       cookies(SimpleTwoDoProperties.get("cookies.userauthorizedkey")) match {
         case Some(Cookie(_, userIdStr, _, _, _, _)) => {
           SimpleTwoDoDatabase.getUserData(userIdStr.toLong) match {
             case Some(userData) => {
-              val twodotweets = getToDoTweets(userData)
+              val twodotweets = getToDoTweets(userData).filter(
+                tweet => !userData.userTaskList.exists(_.tweetId == tweet.getId)
+              )
 
-              var tweetStr = new StringBuilder
-              tweetStr.append("tweet length=").append(twodotweets.length).append("<br/><br/>")
-              twodotweets.foreach(tweet => tweetStr.append(tweet.getId).append(tweet.getText).append("<br/><br/>"))
+              val taskAddedUserData = userData.addUserTasks(
+                twodotweets.map(
+                  tweet => SimpleTwoDoTask(tweet.getId, taskString(tweet.getText, userData.screenName))
+                ).toList
+              )
 
-              Ok ~> HtmlContent ~> ResponseString(tweetStr.toString())
+              SimpleTwoDoDatabase.updateUserData(taskAddedUserData)
+
+              Ok ~> HtmlContent ~> Scalate(req, "twodolist.scaml", ("userData", taskAddedUserData))
             }
             case None => authErr(MessageProperties.get("err.authuser.notfound"))
           }
@@ -40,11 +43,14 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan {
       }
     }
     case GET(_) => NotFound ~> ResponseString(MessageProperties.get("err.requestapi.notfound"))
-    // /public/index.htmlにはアクセス可能
   }
 
   def authErr(message: String) = {
     Unauthorized ~> HtmlContent ~> ResponseString(message)
+  }
+
+  def taskString(tweetText: String, screenName: String) = {
+    tweetText.replaceFirst("(?i)@" + screenName, "").replaceAll("""(?i)#SimpleTwoDo""", "").trim()
   }
 }
 

@@ -1,11 +1,11 @@
 package com.simpletwodo.propertiesutil
 
 /**
- * Created by IntelliJ IDEA.
+ * Properties class implements for Server settings.
  * User: mao
  * Date: 12/03/06
  * Time: 23:13
- * To change this template use File | Settings | File Templates.
+ * This object get setting prior to environment configure then properties file.
  */
 
 import java.io.FileInputStream
