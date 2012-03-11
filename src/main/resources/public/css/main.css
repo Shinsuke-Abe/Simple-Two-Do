@@ -1,0 +1,69 @@
+@charset "UTF-8";
+
+body {
+    margin:0px;
+    padding:0px;
+    background:#9caeb7;
+    text-align:center;
+    height:100%;
+}
+
+body, input {
+    font-family:'Hiragino Kaku Gothic Pro',Meiryo,'MS PGothic',sans-serif;
+}
+
+body * {
+    margin:0px;
+    padding:0px;
+    font-weight:normal;
+}
+
+#all {
+    font-size:10pt;
+    line-height:1.1;
+    color:#0000;
+    background:#9caeb7;
+    font-family:sans-serif;
+    text-align:left;
+    padding:20px;
+}
+
+#welcomemsg {
+    font-size:120%;
+    font-weight:bold;
+}
+
+h1 {
+    font-size:220%;
+    padding-bottom:20px;
+    line-height:1.2;
+    font-weight:bold;
+}
+
+input {
+    padding:10px 15px;
+    font-size:110%;
+    border:none;
+    border-radius:0px;
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+}
+
+p.usage {
+    background:#fff;
+    padding:10px;
+    margin:10px;
+}
+
+p.taskdetail {
+    margin:2px 20px;
+}
+
+/** main **/
+#all form > div {
+    margin-bottom:2px;
+    padding:10px;
+    text-align:left;
+}
+
+/** form **/
