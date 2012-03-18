@@ -18,7 +18,8 @@ libraryDependencies ++= Seq(
    "org.twitter4j" % "twitter4j-core" % "[2.2,)",
    "net.databinder" %% "unfiltered-scalatest" % "0.5.3",
    "com.mongodb.casbah" %% "casbah" % "2.1.5-1",
-   "com.novus" %% "salat-core" % "0.0.8-SNAPSHOT"
+   "com.novus" %% "salat-core" % "0.0.8-SNAPSHOT",
+   "net.databinder" %% "unfiltered-scalatest" % "0.5.3"
 )
 
 resolvers += "twitter4j.org Repository" at "http://twitter4j.org/maven2"

@@ -3,6 +3,7 @@
     %head
         %title Simple Two Do
         %link{:rel => "stylesheet", :type => "text/css", :href => "public/css/main.css"}
+        %script{:type => "text/javascript", :src => "public/js/twodofuncs.js"}
         %script{:type => "text/javascript", :src => "public/js/jquery-1.7.1.min.js"}
     %body
         #all
@@ -11,7 +12,7 @@
                 -@ val userData: com.simpletwodo.mongodbutil.SimpleTwoDoUserData
                 #welcomemsg
                     ようこそ、#{userData.screenName}さん。
-                %div
+                %dt
                     Tweetを利用してToDo管理をするためのサービスです。
                     %br
                     自分に対して、以下のようにリプライを飛ばすことで、ToDoリストに追加されます。
@@ -19,8 +20,9 @@
                         \@ユーザアカウント タスクの内容 #SimpleTwoDo
                     リプライで検索しているため、ユーザアカウントは最初につけてください。
 
-                - for(tweet:com.simpletwodo.mongodbutil.SimpleTwoDoTask <- userData.userTaskList)
-                    - import tweet._
-                    %p.taskdetail
-                        %input.checkbox{:type => "checkbox", :id => {tweetId.toString}}
-                            %label.checkbox{"for" => {tweetId}} #{tweetStatus}
+                %dt.tasklist
+                    - for(tweet:com.simpletwodo.mongodbutil.SimpleTwoDoTask <- userData.userTaskList)
+                        - import tweet._
+                        %p.taskdetail
+                            %input.checkbox{:type => "checkbox", :id => {tweetId.toString}, :checked => {taskStatus}, "onclick" => "changeTaskStatus(this.id, this.checked);"}
+                                %label.checkbox{"for" => {tweetId.toString}} #{tweetStatus}

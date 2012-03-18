@@ -12,16 +12,21 @@ import unfiltered.Cookie
 import com.simpletwodo.mongodbutil._
 import com.simpletwodo.propertiesutil._
 
-// TODO POSTメソッドでbody部から値を取り出す
-class TwoDoApplicationServer extends unfiltered.filter.Plan {
+/**
+ * SimpleTwoDoのメイン処理を行うPlanクラス
+ */
+class TwoDoApplicationServer extends unfiltered.filter.Plan with SimpleTwoDoServer {
 
   def intent = UserAuth {
-    // to do list main page
-    case req@GET(Path(Seg("twodolist" :: Nil)) & Cookies(cookies)) => {
-      cookies(SimpleTwoDoProperties.get("cookies.userauthorizedkey")) match {
-        case Some(Cookie(_, userIdStr, _, _, _, _)) => {
-          SimpleTwoDoDatabase.getUserData(userIdStr.toLong) match {
-            case Some(userData) => {
+    case req@(Cookies(cookies)) => {
+      // UserAuthフィルタで存在は確認済
+      val userId = cookies(authKey).get.value.toLong
+
+      getUser(userId) match {
+        case Some(userData) => {
+          req match {
+            // to do list main page
+            case GET(Path(Seg("twodolist" :: Nil))) => {
               val twodotweets = getToDoTweets(userData).filter(
                 tweet => !userData.userTaskList.exists(_.tweetId == tweet.getId)
               )
@@ -32,21 +37,43 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan {
                 ).toList
               )
 
-              SimpleTwoDoDatabase.updateUserData(taskAddedUserData)
+              updateUser(taskAddedUserData)
 
-              Ok ~> HtmlContent ~> Scalate(req, "twodolist.scaml", ("userData", taskAddedUserData))
+              Ok ~> HtmlContent ~> Scalate(req, templateName, ("userData", taskAddedUserData))
             }
-            case None => authErr(MessageProperties.get("err.authuser.notfound"))
+
+            // task status change request
+            case POST(Path(Seg("changetaskstatus" :: tweetId :: status :: Nil))) => {
+              val taskUpdatedUserData = userData.updateUserTasks(
+                userData.userTaskList.map(
+                  userTask =>
+                    if (userTask.tweetId == tweetId.toLong)
+                      SimpleTwoDoTask(
+                        userTask.tweetId,
+                        userTask.tweetStatus,
+                        status.toBoolean
+                      )
+                    else userTask
+                )
+              )
+
+              try {
+                updateUser(taskUpdatedUserData)
+                Ok ~> JsonContent ~> ResponseString("""{"result": true}""")
+              } catch {
+                case ex: Exception =>
+                  Ok ~> JsonContent ~> ResponseString("""{"result": false, "errmsg": %str}""".format(ex.getMessage))
+              }
+            }
+
+            // not found request
+            case _ => NotFound ~> ResponseString(err404Msg)
           }
         }
-        case _ => authErr(MessageProperties.get("err.authentication"))
+        case None => authErr(authUserNotFoundMsg)
       }
     }
-    case GET(_) => NotFound ~> ResponseString(MessageProperties.get("err.requestapi.notfound"))
-  }
-
-  def authErr(message: String) = {
-    Unauthorized ~> HtmlContent ~> ResponseString(message)
+    case _ => authErr(authErrMsg)
   }
 
   def taskString(tweetText: String, screenName: String) = {
@@ -57,7 +84,7 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan {
 /**
  * Twitterを利用したOAuth認証用のPlanクラス
  */
-class AuthenticationServer extends unfiltered.filter.Plan {
+class AuthenticationServer extends unfiltered.filter.Plan with SimpleTwoDoServer {
   private val reqTokenKey = "RequestToken"
   private val sessionKey = "VHdvRG9TZXNzaW9uS2V5"
 
@@ -89,50 +116,71 @@ class AuthenticationServer extends unfiltered.filter.Plan {
               // リクエストトークンは不要になるので、セッションから削除
               SimpleSessionStore.removeSessionAttribute(sessionId, reqTokenKey)
 
-              if (SimpleTwoDoDatabase.getUserData(accToken.getUserId).isEmpty) {
-                SimpleTwoDoDatabase.insertUserData(
-                  SimpleTwoDoUserData.apply(
-                    accToken.getUserId,
-                    accToken.getScreenName,
-                    accToken.getToken,
-                    accToken.getTokenSecret
-                  )
-                )
-              }
+              if (getUser(accToken.getUserId).isEmpty) insertNewUser(accToken)
 
               // CookieにユーザIDをセットしてリストページにリダイレクトする
               ResponseCookies(
                 Cookie(
-                  SimpleTwoDoProperties.get("cookies.userauthorizedkey"),
+                  authKey,
                   accToken.getUserId.toString,
                   maxAge = Some(authCookieAge)
                 )
               ) ~> Redirect("twodolist")
             }
-            case None => authErr
+            case None => authErr(authErrMsg)
           }
         }
-        case _ => authErr
+        case _ => authErr(authErrMsg)
       }
     }
-  }
-
-  def authErr = {
-    Unauthorized ~> HtmlContent ~> ResponseString(MessageProperties.get("err.authentication"))
   }
 }
 
 /**
  * ユーザ認証判定のためのフィルタ
  */
-object UserAuth extends unfiltered.kit.Prepend {
+object UserAuth extends unfiltered.kit.Prepend with SimpleTwoDoServer {
   def intent = Cycle.Intent[Any, Any] {
-    case Cookies(cookies) if (cookies.get(SimpleTwoDoProperties.get("cookies.userauthorizedkey")).isDefined) => {
+    case Cookies(cookies) if (cookies.get(authKey).isDefined) => {
       Pass
     }
     case _ => {
       Redirect("/authwithtwitter")
     }
+  }
+}
+
+/**
+ * 共通的に利用する文字列・処理をまとめたトレイト
+ */
+trait SimpleTwoDoServer {
+  val authKey = SimpleTwoDoProperties.get("cookies.userauthorizedkey")
+  val authErrMsg = MessageProperties.get("err.authentication")
+  val authUserNotFoundMsg = MessageProperties.get("err.authuser.notfound")
+  val err404Msg = MessageProperties.get("err.requestapi.notfound")
+  val templateName = "twodolist.scaml"
+
+  def authErr(message: String) = {
+    Unauthorized ~> HtmlContent ~> ResponseString(message)
+  }
+
+  def insertNewUser(accToken: auth.AccessToken) {
+    SimpleTwoDoDatabase.insertUserData(
+      SimpleTwoDoUserData.apply(
+        accToken.getUserId,
+        accToken.getScreenName,
+        accToken.getToken,
+        accToken.getTokenSecret
+      )
+    )
+  }
+
+  def updateUser(userData: SimpleTwoDoUserData) {
+    SimpleTwoDoDatabase.updateUserData(userData)
+  }
+
+  def getUser(userId: Long) = {
+    SimpleTwoDoDatabase.getUserData(userId)
   }
 }
 

@@ -59,6 +59,10 @@ p.taskdetail {
     margin:2px 20px;
 }
 
+dt.tasklist {
+    background:#f5deb3;
+}
+
 /** main **/
 #all form > div {
     margin-bottom:2px;
@@ -67,3 +71,8 @@ p.taskdetail {
 }
 
 /** form **/
+#all form dt {
+    border-top:solid 1px #fff;
+    padding:10px;
+    margin:10px;
+}

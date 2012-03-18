@@ -33,13 +33,12 @@ object SimpleTwoDoTwitter {
   }
 
   def getToDoTweets(userData: SimpleTwoDoUserData): Buffer[Tweet] = {
-    val result = getAuthorizedInstance(userData).search(queryGenerate(userData.screenName, "2012-02-12"))
+    val result = getAuthorizedInstance(userData).search(queryGenerate(userData.screenName))
     result.getTweets.asScala
   }
 
-  private def queryGenerate(screenId: String, lastAccessDate: String): Query = {
+  private def queryGenerate(screenId: String): Query = {
     val ret = new Query(SimpleTwoDoProperties.get("twitter.query").format(screenId, screenId))
-    ret.setSince(lastAccessDate)
     ret.setRpp(100)
 
     ret
