@@ -1,4 +1,41 @@
 h1. Simple Two Do
 
-Tweetを利用してタスクを管理するWebサービスのソースです。
-herokuでの公開を目標に作成中で、現在未完成です。
+h2. 概要
+
+Twitterから自分に飛ばしたメンションを拾ってToDoリストにするサービスのソースです。
+heroku上で公開されています。サービスの使い方などは下記URLからご確認ください。
+
+http://simpletwodo.herokuapp.com/
+
+h2. 技術情報
+
+このソースをアップして幾つか設定をすることで、heroku上にToDoサービスを構築できます。
+
+h3. Twitterのアプリケーション登録
+
+Twitterのアプリケーション登録は各自実施して下さい。
+アプリケーション登録時に発行された情報をherokuアプリケーション上の環境変数に登録します(後述)。
+
+h3. データ永続化層
+
+SimpleTwoDoはデータの永続化層としてMONGOLAB Add-onを使っています。
+アプリケーションにMONGOLAB Add-onを追加してください。
+
+h3. アプリケーションの設定について
+
+以下の設定はファイルではなくherokuアプリ上の環境変数にセットして下さい。
+
+* COOKIE_SESSIONID：セッションIDを示すCookieのキー
+* TWITTER_AUTHCALLBACKURL：TwitterのOAuth認証後のコールバック先URL
+* MONGOLAB_URI：MONGOLAB Add-on設定時に指定されるアクセス情報
+* OAUTH_CONSUMERKEY：Twitterへのアプリケーション登録時に発行されるコンシューマキー
+* OAUTH_CONSUMERSECRET：Twitterへのアプリケーション登録時に発行されるコンシューマシークレット
+
+なお、開発環境などで実行する場合は、src/main/resouces配下にlocalsetting.propertiesを作成することで代替させることができます。
+
+h2. その他情報
+
+その他の情報は開発過程も含めて以下をご覧ください。
+機能追加の情報なども下記で発信します。
+
+http://d.hatena.ne.jp/mao_instantlife/searchdiary?word=*[TwoDo]
