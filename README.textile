@@ -5,7 +5,7 @@ h2. 概要
 Twitterから自分に飛ばしたメンションを拾ってToDoリストにするサービスのソースです。
 heroku上で公開されています。サービスの使い方などは下記URLからご確認ください。
 
-http://simpletwodo.herokuapp.com/
+<http://simpletwodo.herokuapp.com/>
 
 h2. 技術情報
 
@@ -38,4 +38,4 @@ h2. その他情報
 その他の情報は開発過程も含めて以下をご覧ください。
 機能追加の情報なども下記で発信します。
 
-http://d.hatena.ne.jp/mao_instantlife/searchdiary?word=*[TwoDo]
+<http://d.hatena.ne.jp/mao_instantlife/searchdiary?word=*[TwoDo]>
