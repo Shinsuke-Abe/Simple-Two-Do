@@ -38,4 +38,4 @@ h2. その他情報
 その他の情報は開発過程も含めて以下をご覧ください。
 機能追加の情報なども下記で発信します。
 
-"開発者ブログ"http://d.hatena.ne.jp/mao_instantlife/searchdiary?word=*[TwoDo]
+"開発者ブログ":http://d.hatena.ne.jp/mao_instantlife/searchdiary?word=*[TwoDo]
