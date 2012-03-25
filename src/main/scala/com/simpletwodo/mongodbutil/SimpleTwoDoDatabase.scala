@@ -12,7 +12,6 @@ package com.simpletwodo.mongodbutil
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.MongoURI
 import com.simpletwodo.propertiesutil.MessageProperties
 import com.simpletwodo.propertiesutil.ServerEnvSettings
 
@@ -20,12 +19,35 @@ import com.simpletwodo.propertiesutil.ServerEnvSettings
  * MongoDBへの接続とユーザデータとタスクリストのCRUDを管理します。
  */
 object SimpleTwoDoDatabase {
-  val db = MongoURI(ServerEnvSettings.get("MONGOLAB_URI")).connectDB
-  val usersDataCollection = db("users_data")
+  val uriPattern = "mongodb://(?:([^:^@]+)(?::([^@]+))?@)?([^:^/]+)(?::(\\d+))?/(.+)".r
+
+  def parseURI(uri: String) = {
+    uri match {
+      case uriPattern(username, password, host, port, database) =>
+        (Option(username), Option(password), host, Option(port), database)
+    }
+  }
+
+  val uri = ServerEnvSettings.get("MONGOLAB_URI")
+  val (usernameOpt, passwordOpt, host, portOpt, database) = parseURI(uri)
+  val conn = portOpt map {
+    port => MongoConnection(host, port.toInt)
+  } getOrElse {
+    MongoConnection(host)
+  }
+  val db = conn(database)
+  val usersDataCollection = {
+    (usernameOpt, passwordOpt) match {
+      case (Some(username), Some(password)) => db.authenticate(username, password)
+      case _ =>
+    }
+    db("users_data")
+  }
 
   private val userIdKey = "userId"
 
   val g = grater[SimpleTwoDoUserData]
+
 
   /**
    * 引数で指定されたユーザデータをデータベースに登録します。
