@@ -21,6 +21,7 @@ import com.simpletwodo.propertiesutil.ServerEnvSettings
  */
 object SimpleTwoDoDatabase {
   val db = MongoURI(ServerEnvSettings.get("MONGOLAB_URI")).connectDB
+  println(ServerEnvSettings.get("MONGOLAB_URI"))
   val usersDataCollection = db("users_data")
 
   private val userIdKey = "userId"
