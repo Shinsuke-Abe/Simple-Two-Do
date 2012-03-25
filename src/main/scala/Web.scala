@@ -18,7 +18,7 @@ import com.simpletwodo.propertiesutil._
 class TwoDoApplicationServer extends unfiltered.filter.Plan with SimpleTwoDoServer {
 
   def intent = UserAuth {
-    case req@(Cookies(cookies)) => {
+    case req@(Cookies(cookies)) if (cookies.get(authKey).isDefined) => {
       // UserAuthフィルタで存在は確認済
       val userId = cookies(authKey).get.value.toLong
 
