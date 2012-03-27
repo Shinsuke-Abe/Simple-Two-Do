@@ -1,10 +1,8 @@
 @charset "UTF-8";
 
 body {
-    margin:0px;
     padding:0px;
-    background:#9caeb7;
-    text-align:center;
+    background:#fff;
     height:100%;
 }
 
@@ -12,67 +10,111 @@ body, input {
     font-family:'Hiragino Kaku Gothic Pro',Meiryo,'MS PGothic',sans-serif;
 }
 
-body * {
-    margin:0px;
-    padding:0px;
-    font-weight:normal;
+h2{
+	font-size:2.2em;
+	font-weight:normal;
+	letter-spacing:0.01em;
+	text-transform:uppercase;
 }
 
-#all {
+header,footer,
+article,section,
+hgroup,nav,
+figure{
+	/* Giving a display value to the HTML5 rendered elements: */
+	display:block;
+}
+
+nav{
+	background:url(public/img/gradient_light.jpg) repeat-x 50% 50% #f8f8f8;
+	padding:0 5px;
+	position:absolute;
+	right:0;
+	top:4em;
+
+	border:1px solid #FCFCFC;
+
+	-moz-box-shadow:0 1px 1px #333333;
+	-webkit-box-shadow:0 1px 1px #333333;
+	box-shadow:0 1px 1px #333333;
+}
+
+/* The clearfix hack to clear the floats: */
+
+.clear:after{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+
+/* The navigation styling: */
+
+nav ul li{
+	display:inline;
+}
+
+nav ul li a,
+nav ul li a:visited{
+	color:#565656;
+	display:block;
+	float:left;
+	font-size:1.25em;
+	font-weight:bold;
+	margin:5px 2px;
+	padding:7px 10px 4px;
+	text-shadow:0 1px 1px white;
+	text-transform:uppercase;
+}
+
+nav ul li a:hover{
+	text-decoration:none;
+	background-color:#f0f0f0;
+}
+
+nav, article, nav ul li a,figure{
+	/* Applying CSS3 rounded corners: */
+	-moz-border-radius:10px;
+	-webkit-border-radius:10px;
+	border-radius:10px;
+}
+
+#page{
     font-size:10pt;
     line-height:1.1;
     color:#0000;
-    background:#9caeb7;
-    font-family:sans-serif;
-    text-align:left;
-    padding:20px;
+	width:960px;
+	margin:0 auto;
+	position:relative;
 }
 
-#welcomemsg {
-    font-size:120%;
-    font-weight:bold;
+article{
+	background-color:#213E4A;
+	margin:3em 0;
+	padding:20px;
+	color:#fff;
+
+	text-shadow:0 2px 0 black;
 }
 
-h1 {
-    font-size:220%;
-    padding-bottom:20px;
-    line-height:1.2;
-    font-weight:bold;
-}
-
-input {
-    padding:10px 15px;
-    font-size:110%;
-    border:none;
-    border-radius:0px;
-	-webkit-border-radius:0;
-	-moz-border-radius:0;
-}
-
-p.usage {
-    background:#fff;
-    padding:10px;
-    margin:10px;
+.line{
+	/* The dividing line: */
+	height:1px;
+	background-color:#24404c;
+	border-bottom:1px solid #416371;
+	margin:1em 0;
+	overflow:hidden;
 }
 
 p.taskdetail {
     margin:2px 20px;
 }
 
-dt.tasklist {
-    background:#f5deb3;
-}
-
-/** main **/
-#all form > div {
-    margin-bottom:2px;
-    padding:10px;
-    text-align:left;
-}
-
-/** form **/
-#all form dt {
-    border-top:solid 1px #fff;
+p.usage {
+    background:#fff;
+    color:#000;
     padding:10px;
     margin:10px;
+    text-shadow:none;
 }

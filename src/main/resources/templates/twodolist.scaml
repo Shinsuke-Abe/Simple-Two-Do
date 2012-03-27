@@ -6,23 +6,40 @@
         %script{:type => "text/javascript", :src => "public/js/twodofuncs.js"}
         %script{:type => "text/javascript", :src => "public/js/jquery-1.7.1.min.js"}
     %body
-        #all
-            %h1 Simple Two Do
-            %form{:method => "post", :action => "", :enctype => "multipart/form-data"}
-                -@ val userData: com.simpletwodo.mongodbutil.SimpleTwoDoUserData
-                #welcomemsg
-                    ようこそ、#{userData.screenName}さん。
-                %dt
-                    Tweetを利用してToDo管理をするためのサービスです。
-                    %br
-                    自分に対して、以下のようにリプライを飛ばすことで、ToDoリストに追加されます。
-                    %p.usage
-                        \@ユーザアカウント タスクの内容 #SimpleTwoDo
-                    リプライで検索しているため、ユーザアカウントは最初につけてください。
+        %section{:id => "page"}
+            -@ val userData: com.simpletwodo.mongodbutil.SimpleTwoDoUserData
+            %header
+                %hgroup
+                    %h1
+                        %a{:href => "/twodolist"}
+                            %img{:src => "public/img/SimpleTwoDo_Logo.png", :alt => "logo", :height => "35%", :width => "35%"}
+                %nav.clear
+                    %ul
+                        %li #{userData.screenName}
+                        %li <b>|</b>
+                        %li 完了済タスクリスト
+                        %li <b>|</b>
+                        %li SimpleTwoDoとは？
 
-                %dt.tasklist
-                    - for(tweet:com.simpletwodo.mongodbutil.SimpleTwoDoTask <- userData.userTaskList)
-                        - import tweet._
-                        %p.taskdetail
-                            %input.checkbox{:type => "checkbox", :id => {tweetId.toString}, :checked => {taskStatus}, "onclick" => "changeTaskStatus(this.id, this.checked);"}
-                                %label.checkbox{"for" => {tweetId.toString}} #{tweetStatus}
+            .line
+
+            %section{:id => "articles"}
+                %form{:method => "post", :action => "", :enctype => "multipart/form-data"}
+                    %article{:id => "description"}
+                        Tweetを利用してToDo管理をするためのサービスです。
+                        %br
+                        自分に対して、以下のようにリプライを飛ばすことで、ToDoリストに追加されます。
+                        %p.usage
+                            \@ユーザアカウント タスクの内容 #SimpleTwoDo
+                        リプライで検索しているため、ユーザアカウントは最初につけてください。
+
+                    .line
+
+                    %article{:id => "tasklist"}
+                        %h2 現在のタスク
+                        .line
+                        - for(tweet:com.simpletwodo.mongodbutil.SimpleTwoDoTask <- userData.userTaskList)
+                            - import tweet._
+                            %p.taskdetail
+                                %input.checkbox{:type => "checkbox", :id => {tweetId.toString}, :checked => {taskStatus}, "onclick" => "changeTaskStatus(this.id, this.checked);"}
+                                    %label.checkbox{"for" => {tweetId.toString}} #{tweetStatus}
