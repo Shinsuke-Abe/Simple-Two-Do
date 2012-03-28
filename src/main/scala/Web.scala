@@ -66,6 +66,11 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan with SimpleTwoDoServ
               }
             }
 
+            // default routing
+            case Path(Seg(Nil)) => {
+              Redirect("twodolist")
+            }
+
             // not found request
             case _ => NotFound ~> ResponseString(err404Msg)
           }
