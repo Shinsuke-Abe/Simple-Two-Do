@@ -26,7 +26,7 @@ figure{
 }
 
 nav{
-	background:url(public/img/gradient_light.jpg) repeat-x 50% 50% #f8f8f8;
+	background:url(/public/img/gradient_light.jpg) repeat-x 50% 50% #f8f8f8;
 	padding:0 5px;
 	position:absolute;
 	right:0;
@@ -55,6 +55,7 @@ nav ul li{
 	display:inline;
 }
 
+nav ul li p,
 nav ul li a,
 nav ul li a:visited{
 	color:#565656;
@@ -65,7 +66,6 @@ nav ul li a:visited{
 	margin:5px 2px;
 	padding:7px 10px 4px;
 	text-shadow:0 1px 1px white;
-	text-transform:uppercase;
 }
 
 nav ul li a:hover{
@@ -96,6 +96,19 @@ article{
 	color:#fff;
 
 	text-shadow:0 2px 0 black;
+}
+
+.description {
+	background-color:#213E4A;
+	margin:0 auto;
+	padding:20px;
+	color:#fff;
+
+	text-shadow:0 2px 0 black;
+    /* Applying CSS3 rounded corners: */
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+    border-radius:10px;
 }
 
 .line{

@@ -2,9 +2,28 @@
 %html
     %head
         %title Simple Two Do
-        %link{:rel => "stylesheet", :type => "text/css", :href => "public/css/main.css"}
-        %script{:type => "text/javascript", :src => "public/js/twodofuncs.js"}
-        %script{:type => "text/javascript", :src => "public/js/jquery-1.7.1.min.js"}
+        %link{:rel => "stylesheet", :type => "text/css", :href => "/public/css/main.css"}
+        %link{:rel => "stylesheet", :type => "text/css", :href => "/public/css/prettyPopin.css"}
+        %script{:type => "text/javascript", :src => "/public/js/twodofuncs.js"}
+        %script{:type => "text/javascript", :src => "/public/js/jquery-1.7.1.min.js"}
+        %script{:type => "text/javascript", :src => "/public/js/jquery.prettyPopin.js"}
+
+        :javascript
+            $(document).ready(function(){
+                $("a[rel^='prettyPopin']").prettyPopin({
+                    modal : true,
+                    width : 450,
+                    height: 450,
+                    opacity: 0.5,
+                    animationSpeed: '0',
+                    followScroll: false,
+                    loader_path: '/public/img/prettyPopin/loader.gif',
+                    callback: function() {
+                        return;
+                    }
+                    });
+                });
+
     %body
         %section{:id => "page"}
             -@ val userData: com.simpletwodo.mongodbutil.SimpleTwoDoUserData
@@ -12,29 +31,20 @@
                 %hgroup
                     %h1
                         %a{:href => "/twodolist"}
-                            %img{:src => "public/img/SimpleTwoDo_Logo.png", :alt => "logo", :height => "35%", :width => "35%"}
+                            %img{:src => "/public/img/SimpleTwoDo_Logo.png", :alt => "logo", :height => "35%", :width => "35%"}
                 %nav.clear
                     %ul
-                        %li #{userData.screenName}
-                        %li <b>|</b>
-                        %li 完了済タスクリスト
-                        %li <b>|</b>
-                        %li SimpleTwoDoとは？
+                        %li
+                            %p #{userData.screenName}
+                        %li
+                            %p 完了済タスクリスト
+                        %li
+                            %a{:href => "/public/descriptions.html", :rel => "prettyPopin"} SimpleTwoDoとは？
 
             .line
 
             %section{:id => "articles"}
                 %form{:method => "post", :action => "", :enctype => "multipart/form-data"}
-                    %article{:id => "description"}
-                        Tweetを利用してToDo管理をするためのサービスです。
-                        %br
-                        自分に対して、以下のようにリプライを飛ばすことで、ToDoリストに追加されます。
-                        %p.usage
-                            \@ユーザアカウント タスクの内容 #SimpleTwoDo
-                        リプライで検索しているため、ユーザアカウントは最初につけてください。
-
-                    .line
-
                     %article{:id => "tasklist"}
                         %h2 現在のタスク
                         .line
