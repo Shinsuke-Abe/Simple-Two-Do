@@ -90,6 +90,8 @@ object SimpleTwoDoDatabase {
       case None => None
     }
   }
+
+  def getAllUserData = usersDataCollection.map(g.asObject(_))
 }
 
 /**
@@ -156,8 +158,9 @@ case class SimpleTwoDoUserData(
  * @param tweetId タスクとなるツイートのID
  * @param tweetStatus ツイートの内容(メンションとハッシュタグはのぞく)
  * @param taskStatus タスクの状況(false=>to do true=>done)
+ * @param displayFlag タスクの表示フラグ(false=>非表示 true=>表示)で、バッチで一日一回完了済みを非表示にする
  */
-case class SimpleTwoDoTask(tweetId: Long, tweetStatus: String, var taskStatus: Boolean = false) {
+case class SimpleTwoDoTask(tweetId: Long, tweetStatus: String, var taskStatus: Boolean = false, var displayFlag: Boolean = true) {
   override def equals(other: Any) = other match {
     case that: SimpleTwoDoTask => that.tweetId == this.tweetId
     case _ => false

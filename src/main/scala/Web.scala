@@ -39,7 +39,11 @@ class TwoDoApplicationServer extends unfiltered.filter.Plan with SimpleTwoDoServ
 
               updateUser(taskAddedUserData)
 
-              Ok ~> HtmlContent ~> Scalate(req, templateName, ("userData", taskAddedUserData))
+              val displayUserData = taskAddedUserData.updateUserTasks(
+                taskAddedUserData.userTaskList.filter(_.displayFlag == true)
+              )
+
+              Ok ~> HtmlContent ~> Scalate(req, templateName, ("userData", displayUserData))
             }
 
             // task status change request
